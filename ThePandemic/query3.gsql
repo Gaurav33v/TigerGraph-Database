@@ -1,0 +1,23 @@
+CREATE QUERY q4(/* Parameters here */) FOR GRAPH MyGraph { 
+  /* If a person travel having covid confirm how many people he will infect */ 
+  SumAccum<INT> @@total; //On an average how many people does a person infects during the interval of getting symptoms and getting the confirmed news of disease. 
+  FLOAT ans;
+  FLOAT it;
+    patient={Patient.*};
+  
+
+  patient=SELECT s FROM patient:s WHERE (s.confirmed_date!=to_datetime(""));
+  
+  
+/*  patient=SELECT s FROM patient:s -(PATIENT_TRAVELED:e)-> TravelEvent: p WHERE p.visited_date<s.confirmed_date  AND              p.visited_date>s.symptom_onset_date ;*/
+  
+  
+  patient=SELECT s FROM patient:s -(PATIENT_TRAVELED:e)-> TravelEvent: p WHERE p.visited_date<s.confirmed_date  AND              p.visited_date>s.symptom_onset_date ;
+  
+  it=patient.size();
+  patient=SELECT s FROM patient:s -(reverse_INFECTED_BY:e)->Patient ACCUM @@total+=1;
+  PRINT @@total;
+  ans=it/@@total;
+  PRINT ans;
+ 
+}
