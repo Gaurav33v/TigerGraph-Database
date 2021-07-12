@@ -1,0 +1,24 @@
+CREATE QUERY q5(/* Parameters here */) FOR GRAPH HealthInsurance {
+  TYPEDEF tuple<STRING providerName, INT moneyPaid> providers;
+  SumAccum<uint> @individualPayment;
+  SumAccum<uint> @@overallPayment;
+ 
+  PRINT "a1 works!";
+ 
+  allmembers={MemberData.*};
+  allproviders={Provider.*};
+  providersList=SELECT t from allmembers:s-(PROVIDES_TO:e)-:t
+              ACCUM t.@individualPayment +=(e.charges)
+             
+  ;
+  providersList=SELECT t from providersList:t
+              ACCUM @@overallPayment+=(t.@individualPayment);
+  
+  providersList1 = SELECT t from providersList:t
+                ORDER BY t.@individualPayment DESC;
+                
+  
+  PRINT @@overallPayment;
+   
+  PRINT providersList1;
+}
