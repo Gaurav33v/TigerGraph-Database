@@ -1,0 +1,30 @@
+CREATE QUERY q1() FOR GRAPH ThePandemic {
+  
+  //Name of the city where exists most number of woman under 40 who were probably affected after visiting the hotspot Shincheonji Church.
+  TYPEDEF TUPLE <VERTEX CityId , INT NumOf>structure;
+  
+  HeapAccum<structure>(1 , NumOf DESC) @@finalresults;
+  
+  OrAccum @visited = false;
+  SumAccum<INT> @sums = 0;
+  
+  patients = {Patient.*};
+  cities = {City.*};
+  
+  females = SELECT p FROM patients:p
+            WHERE p.sex == "female" AND p.birth_year>=1980;
+  
+  females_with_covid1 = SELECT p FROM females:p - (BELONGS_TO_CASE:e) -> :i
+                      WHERE i.infection_case=="Shincheonji Church";  
+  
+  result1 = SELECT p FROM females_with_covid1:p - (PATIENT_FROM_CITY:e) -> :i
+            WHERE p.@visited==FALSE
+            ACCUM i.@sums+=1,
+            p.@visited = TRUE; 
+  
+  result2 = SELECT p FROM cities:c - (PATIENT_FROM_CITY:e) -> :p
+            ACCUM @@finalresults += structure(c , c.@sums); 
+  
+  PRINT @@finalresults;  
+  
+  }
