@@ -1,1 +1,15 @@
-
+CREATE QUERY q1(STRING query_benefit , STRING query_disease ) FOR GRAPH HealthInsurance { 
+  
+  PRINT "q1 works!"; 
+  members = {MemberData.*};
+  benefits = {Benefits.*};
+  diseases = {Disease.*};
+  
+  
+   members_with_benefit = SELECT s FROM members:s -(HAS_BENEFIT)-> Benefits:pats WHERE pats.benefitId==query_benefit;
+  
+   members_required = SELECT s FROM members_with_benefit:s -(HAS_DISEASE)-> Disease:pats WHERE pats.diseaseId==query_disease;
+  
+  PRINT members_required;
+  
+}
